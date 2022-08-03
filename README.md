@@ -24,6 +24,7 @@ cd Chippy-8
 
 #### 3. Compilation
 
+**NOTE: For whatever reason compiling and linking the executable on Ubuntu doesnt work. It used to work the exact same way like on other distros. Idk what sh*t the Ubuntu Devs changed again.**
 ```
 gcc -std=c11 -Wall -Wextra -flto -march=native -O2 -lSDL2 Chippy-8.c -o Chippy8
 ```
