@@ -25,5 +25,5 @@ cd Chippy-8
 #### 3. Compilation
 
 ```
-gcc -std=c11 -Wall -Werror -flto -march=native -O2 -lSDL2 Chippy-8.c -o Chippy8
+gcc -std=c11 -Wall -Wextra -flto -march=native -O2 -lSDL2 Chippy-8.c -o Chippy8
 ```
