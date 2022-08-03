@@ -27,3 +27,8 @@ cd Chippy-8
 ```
 gcc -std=c11 -Wall -Wextra -flto -march=native -O2 -lSDL2 Chippy-8.c -o Chippy8
 ```
+
+Then execute it like the following:
+```
+./Chippy8 <path_to_rom>
+```
