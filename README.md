@@ -7,7 +7,7 @@ A fast Chip 8 Emulator written in C.
 
 * Ubuntu/Debian:
 ```    
-sudo apt install build-essential libsdl2-dev
+sudo apt install build-essential libsdl2-dev git
 ```
 
 * Arch
@@ -15,10 +15,11 @@ sudo apt install build-essential libsdl2-dev
 sudo pacman -S base-devel sdl2
 ```
 
-#### 2. Clone the repo:
+#### 2. Clone the repo and cd into it:
 
 ```
 git clone https://github.com/Lu-Die-Milchkuh/Chippy-8.git
+cd Chippy-8
 ```
 
 #### 3. Compilation
