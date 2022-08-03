@@ -2,7 +2,7 @@
 #include <string.h>
 #include <math.h>
 #include <SDL2/SDL.h>
-#include "Chip8.h"
+#include "Chippy-8.h"
 
 // Change this to whatever you like lol
 #define SCALE 15
