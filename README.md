@@ -12,7 +12,7 @@ sudo apt install build-essential libsdl2-dev git
 
 * Arch
 ```
-sudo pacman -S base-devel sdl2
+sudo pacman -S base-devel sdl2 git
 ```
 
 #### 2. Clone the repo and cd into it:
