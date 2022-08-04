@@ -33,3 +33,24 @@ Then execute it like the following:
 ```
 ./Chippy8 <path_to_rom>
 ```
+## Controls
+
+The Original Chip-8 has the following Keyboard Layout:
+```
+1   2   3   C
+4   5   6   D
+7   8   9   E
+A   0   B   F
+```
+which are mapped like the following on your keyboard
+```
+1   2   3   4
+Q   W   E   R
+A   S   D   F
+Y   X   C   V
+```
+
+## Screenshots
+![testrom_sucess](screenshots/testrom_success.png)
+![space_invaders_titlescreen](screenshots/space_invaders_titlescreen.png)
+![pong_gameplay](screenshots/pong_gameplay.png)
