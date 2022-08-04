@@ -137,6 +137,13 @@ void drawScreen(Chip8* chip8) {
     4   5   6   D
     7   8   9   E
     A   0   B   F
+
+    Translated Keyboard Layout:
+
+    1   2   3   4
+    Q   W   E   R
+    A   S   D   F
+    Y   X   C   V
 */
 void getKey(Chip8* chip8) {
 
@@ -151,67 +158,67 @@ void getKey(Chip8* chip8) {
     if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
         switch(event.key.keysym.scancode)
         {
-            case 0x27:  // 0 Key
+            case SDL_SCANCODE_1:  // 0 Key
                 chip8->keyboard[0] = INPUT;
                 break;
 
-            case 0x1e:  // 1 Key
+            case SDL_SCANCODE_2:  // 1 Key
                 chip8->keyboard[1] = INPUT;
                 break;
 
-            case 0x1f:  // 2 Key
+            case SDL_SCANCODE_3:  // 2 Key
                 chip8->keyboard[2] = INPUT;
                 break;
 
-            case 0x20:
+            case SDL_SCANCODE_4:
                 chip8->keyboard[3] = INPUT;
                 break;
 
-            case 0x21:
+            case SDL_SCANCODE_Q:
                 chip8->keyboard[4] = INPUT;
                 break;
 
-            case 0x22:
+            case SDL_SCANCODE_W:
                 chip8->keyboard[5] = INPUT;
                 break;
 
-            case 0x23:
+            case SDL_SCANCODE_E:
                 chip8->keyboard[6] = INPUT;
                 break;
 
-            case 0x24:
+            case SDL_SCANCODE_R:
                 chip8->keyboard[7] = INPUT;
                 break;
 
-            case 0x25:
+            case SDL_SCANCODE_A:
                 chip8->keyboard[8] = INPUT;
                 break;
 
-            case 0x26:
+            case SDL_SCANCODE_S:
                 chip8->keyboard[9] = INPUT;
                 break;
 
-            case 0x4: // A Key
+            case SDL_SCANCODE_D: // A Key
                 chip8->keyboard[0xA] = INPUT;
                 break;
 
-            case 0x5: // B Key
+            case SDL_SCANCODE_F: // B Key
                 chip8->keyboard[0xB] = INPUT;
                 break;
 
-            case 0x6: // C Key
+            case SDL_SCANCODE_Y: // C Key
                 chip8->keyboard[0xC] = INPUT;
                 break;
 
-            case 0x7: // D Key
+            case SDL_SCANCODE_X: // D Key
                 chip8->keyboard[0xD] = INPUT;
                 break;
 
-            case 0x8: // E Key
+            case SDL_SCANCODE_C: // E Key
                 chip8->keyboard[0xE] = INPUT;
                 break;
 
-            case 0x9: // F Key
+            case SDL_SCANCODE_V: // F Key
                 chip8->keyboard[0xF] = INPUT;
                 break;
 
