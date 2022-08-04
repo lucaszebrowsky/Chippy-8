@@ -424,10 +424,10 @@ void INST_DXYN(Chip8* chip8) {
         for(u16 xLine = 0; xLine < 8; xLine++) {
             if((pixel & (0x80 >> xLine)) != 0) {
 
-                if(chip8->display[(chip8->V[x] + xLine + ((chip8->V[y] + yLine) * 64))] == 1) {
+                if(chip8->display[(chip8->V[x] + xLine + ((chip8->V[y] + yLine) * 64)) % 2048] == 1) {
                     chip8->V[0xF] = 1;
                 }
-                chip8->display[(chip8->V[x] + xLine + ((chip8->V[y]+ yLine) * 64))] ^= 1;
+                chip8->display[(chip8->V[x] + xLine + ((chip8->V[y] + yLine) * 64)) % 2048] ^= 1;
             }
         }
     }
