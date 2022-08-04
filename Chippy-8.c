@@ -559,16 +559,22 @@ void game_loop(Chip8* chip8) {
         &INST_CXNN,&INST_DXYN,&INST_E000,&INST_F000
     };
 
-    
+    const uint32_t clock_speed = (uint32_t)(500/60);
+
     while(running)
     {   
+        // 9 CPU Cycles
+        for (uint32_t i = 0; i < clock_speed; i++)
+        {
+            chip8->opcode = chip8->memory.ram[chip8->PC] << 8 | chip8->memory.ram[(chip8->PC+1)];
+            //printf("Executing now: %x\n",chip8->opcode);
+
+            (*jump_table[chip8->opcode >> 12])(chip8);
+
+        }
+
         if(chip8->DT > 0) chip8->DT--;
         if(chip8->ST > 0) chip8->ST--;
-
-        chip8->opcode = chip8->memory.ram[chip8->PC] << 8 | chip8->memory.ram[(chip8->PC+1)];
-        //printf("Executing now: %x\n",chip8->opcode);
-
-        (*jump_table[chip8->opcode >> 12])(chip8);
 
         if(drawFlag) {
             drawScreen(chip8);
@@ -581,7 +587,8 @@ void game_loop(Chip8* chip8) {
         if(event.type == SDL_QUIT) {
             running = 0;
         }
-        //SDL_Delay(5);
+
+        SDL_Delay(5);
     }
     
 }
