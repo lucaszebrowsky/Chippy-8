@@ -145,87 +145,29 @@ void drawScreen(Chip8* chip8) {
     A   S   D   F
     Y   X   C   V
 */
-void getKey(Chip8* chip8) {
-
-    /*
-        Depending on the Key Status(Up or Down) this macro will evaluate to 1 or 0
+void updateKeys(Chip8* chip8) {
+    /*  This function returns a pointer to an SDL internal array,
+        so it will always return the same pointer and wont cause a memory leak
     */
-    #define INPUT !(event.key.type - 768)
+    const u8* key_state = SDL_GetKeyboardState(NULL);
+    SDL_PumpEvents();
 
-    SDL_Event event;
-    
-    SDL_PollEvent(&event);
-    if(event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-        switch(event.key.keysym.scancode)
-        {
-            case SDL_SCANCODE_1:  // 0 Key
-                chip8->keyboard[0] = INPUT;
-                break;
-
-            case SDL_SCANCODE_2:  // 1 Key
-                chip8->keyboard[1] = INPUT;
-                break;
-
-            case SDL_SCANCODE_3:  // 2 Key
-                chip8->keyboard[2] = INPUT;
-                break;
-
-            case SDL_SCANCODE_4:
-                chip8->keyboard[3] = INPUT;
-                break;
-
-            case SDL_SCANCODE_Q:
-                chip8->keyboard[4] = INPUT;
-                break;
-
-            case SDL_SCANCODE_W:
-                chip8->keyboard[5] = INPUT;
-                break;
-
-            case SDL_SCANCODE_E:
-                chip8->keyboard[6] = INPUT;
-                break;
-
-            case SDL_SCANCODE_R:
-                chip8->keyboard[7] = INPUT;
-                break;
-
-            case SDL_SCANCODE_A:
-                chip8->keyboard[8] = INPUT;
-                break;
-
-            case SDL_SCANCODE_S:
-                chip8->keyboard[9] = INPUT;
-                break;
-
-            case SDL_SCANCODE_D: // A Key
-                chip8->keyboard[0xA] = INPUT;
-                break;
-
-            case SDL_SCANCODE_F: // B Key
-                chip8->keyboard[0xB] = INPUT;
-                break;
-
-            case SDL_SCANCODE_Y: // C Key
-                chip8->keyboard[0xC] = INPUT;
-                break;
-
-            case SDL_SCANCODE_X: // D Key
-                chip8->keyboard[0xD] = INPUT;
-                break;
-
-            case SDL_SCANCODE_C: // E Key
-                chip8->keyboard[0xE] = INPUT;
-                break;
-
-            case SDL_SCANCODE_V: // F Key
-                chip8->keyboard[0xF] = INPUT;
-                break;
-
-            default:
-                break;
-            }
-    }
+    chip8->keyboard[0x0] = key_state[SDL_SCANCODE_1];
+    chip8->keyboard[0x1] = key_state[SDL_SCANCODE_2];
+    chip8->keyboard[0x2] = key_state[SDL_SCANCODE_3];
+    chip8->keyboard[0x3] = key_state[SDL_SCANCODE_4];
+    chip8->keyboard[0x4] = key_state[SDL_SCANCODE_Q];
+    chip8->keyboard[0x5] = key_state[SDL_SCANCODE_W];
+    chip8->keyboard[0x6] = key_state[SDL_SCANCODE_E];
+    chip8->keyboard[0x7] = key_state[SDL_SCANCODE_R];
+    chip8->keyboard[0x8] = key_state[SDL_SCANCODE_A];
+    chip8->keyboard[0x9] = key_state[SDL_SCANCODE_S];
+    chip8->keyboard[0xA] = key_state[SDL_SCANCODE_S];
+    chip8->keyboard[0xB] = key_state[SDL_SCANCODE_F];
+    chip8->keyboard[0xC] = key_state[SDL_SCANCODE_Y];
+    chip8->keyboard[0xD] = key_state[SDL_SCANCODE_X];
+    chip8->keyboard[0xE] = key_state[SDL_SCANCODE_C];
+    chip8->keyboard[0xF] = key_state[SDL_SCANCODE_V];
 }
 
 /*
@@ -370,7 +312,7 @@ void INST_8000(Chip8* chip8) {
             break;
 
         case 0x000E:
-            chip8->V[0xF] = chip8->V[x] & 0x80;
+            chip8->V[0xF] = (chip8->V[x] & 0x80) >> 7;
             chip8->V[x] = chip8->V[x] << 1;
             break;
 
@@ -588,8 +530,8 @@ void game_loop(Chip8* chip8) {
             drawFlag = 0;
         }
 
-        getKey(chip8);
-
+        updateKeys(chip8);
+        
         SDL_PollEvent(&event);
         if(event.type == SDL_QUIT) {
             running = 0;
