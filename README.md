@@ -7,31 +7,30 @@ A fast Chip 8 Emulator written in C.
 
 * Ubuntu/Debian:
 ```    
-sudo apt install build-essential libsdl2-dev git
+$ sudo apt install build-essential libsdl2-dev git
 ```
 
 * Arch
 ```
-sudo pacman -S base-devel sdl2 git
+$ sudo pacman -S base-devel sdl2 git
 ```
 
 #### 2. Clone the repo and cd into it:
 
 ```
-git clone https://github.com/Lu-Die-Milchkuh/Chippy-8.git
-cd Chippy-8
+$ git clone https://github.com/Lu-Die-Milchkuh/Chippy-8.git && cd Chippy-8
 ```
 
 #### 3. Compilation
 
 **NOTE: For whatever reason compiling and linking the executable on Ubuntu doesnt work. It used to work the exact same way like on other distros. Idk what sh*t the Ubuntu Devs changed again.**
 ```
-gcc -std=c11 -Wall -Wextra -flto -march=native -O2 -lSDL2 Chippy-8.c -o Chippy8
+$ make
 ```
 
 Then execute it like the following:
 ```
-./Chippy8 <path_to_rom>
+$ ./Chippy-8 <path_to_rom>
 ```
 ## Controls
 
