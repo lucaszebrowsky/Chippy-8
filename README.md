@@ -23,7 +23,6 @@ $ git clone https://github.com/Lu-Die-Milchkuh/Chippy-8.git && cd Chippy-8
 
 #### 3. Compilation
 
-**NOTE: For whatever reason compiling and linking the executable on Ubuntu doesnt work. It used to work the exact same way like on other distros. Idk what sh*t the Ubuntu Devs changed again.**
 ```
 $ make
 ```
