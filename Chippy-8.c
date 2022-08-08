@@ -146,7 +146,8 @@ void drawScreen(Chip8* chip8) {
     Y   X   C   V
 */
 void updateKeys(Chip8* chip8) {
-    /*  This function returns a pointer to an SDL internal array,
+    /*  
+        This function returns a pointer to an SDL internal array,
         so it will always return the same pointer and wont cause a memory leak
     */
     const u8* key_state = SDL_GetKeyboardState(NULL);
@@ -440,10 +441,11 @@ void INST_F000(Chip8* chip8) {
         case 0x000A:
 
             SDL_Event event;
-                
+
             while(!SDL_PollEvent(&event))
             {   
                 // Wait for keypress by user
+                SDL_Delay(1);
             }
             break;
 
@@ -499,7 +501,15 @@ void INST_F000(Chip8* chip8) {
 void game_loop(Chip8* chip8) {
     SDL_Event event;
     u8 running = 1;
-    
+    // 500 Instructions/60 Hz == ~ 9 Cycles
+    const uint32_t clock_speed = (uint32_t)(500/60);
+
+    // Sound Stuff
+    SDL_AudioSpec wavSpec;
+    uint32_t wavLength;
+    u8 *wavBuffer;
+    SDL_AudioDeviceID deviceId;
+
     // Jump Table
     static void (*jump_table[16])(Chip8*) = {
         &INST_0000,&INST_1NNN,&INST_2NNN,&INST_3XNN,
@@ -508,7 +518,13 @@ void game_loop(Chip8* chip8) {
         &INST_CXNN,&INST_DXYN,&INST_E000,&INST_F000
     };
 
-    const uint32_t clock_speed = (uint32_t)(500/60);
+    /*
+        If you want to use your own sound file, just place your .wav in the same directory as the executable. 
+        Keep in mind that you need to rename it to "sound.wav"!
+    */
+    SDL_LoadWAV("sound.wav",&wavSpec,&wavBuffer,&wavLength);
+    deviceId = SDL_OpenAudioDevice(NULL, 0, &wavSpec, NULL, 0);
+
 
     while(running)
     {   
@@ -521,9 +537,16 @@ void game_loop(Chip8* chip8) {
             (*jump_table[chip8->opcode >> 12])(chip8);
 
         }
-
+        
         if(chip8->DT > 0) chip8->DT--;
-        if(chip8->ST > 0) chip8->ST--;
+
+        if(chip8->ST > 0) {
+            if(chip8->ST == 1) {
+                SDL_QueueAudio(deviceId, wavBuffer, wavLength);
+                SDL_PauseAudioDevice(deviceId, 0);
+            }
+            chip8->ST--;
+        }
 
         if(drawFlag) {
             drawScreen(chip8);
@@ -531,7 +554,7 @@ void game_loop(Chip8* chip8) {
         }
 
         updateKeys(chip8);
-        
+
         SDL_PollEvent(&event);
         if(event.type == SDL_QUIT) {
             running = 0;
@@ -539,13 +562,15 @@ void game_loop(Chip8* chip8) {
 
         SDL_Delay(5);
     }
-    
+
+    SDL_CloseAudioDevice(deviceId);
+    SDL_FreeWAV(wavBuffer);
 }
 
 void killSDL(void) {
     SDL_DestroyRenderer(window_render);
 	SDL_DestroyWindow(window);
-	SDL_Quit();
+    SDL_Quit();
     window_render = NULL;
     window = NULL;
 }
