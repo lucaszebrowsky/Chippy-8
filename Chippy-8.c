@@ -501,7 +501,7 @@ void INST_F000(Chip8* chip8) {
 void game_loop(Chip8* chip8) {
     SDL_Event event;
     u8 running = 1;
-    // 500 Instructions/60 Hz == ~ 9 Cycles
+    // 500 Instructions/60 Hz == ~ 8 Cycles
     const uint32_t clock_speed = (uint32_t)(500/60);
 
     // Sound Stuff
@@ -528,7 +528,7 @@ void game_loop(Chip8* chip8) {
 
     while(running)
     {   
-        // 9 CPU Cycles
+        // 8 CPU Cycles
         for (uint32_t i = 0; i < clock_speed; i++)
         {
             chip8->opcode = chip8->memory.ram[chip8->PC] << 8 | chip8->memory.ram[(chip8->PC+1)];
