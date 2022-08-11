@@ -443,7 +443,7 @@ void INST_F000(Chip8* chip8) {
                 for(u8 i = 0; i < 0x10;i++) {
                     SDL_PumpEvents();
                     if(key_state[keymap[i]]) {
-                        chip8->V[x] = key_state[keymap[i]];
+                        chip8->V[x] = i;
                         goto DONE;  // get out of this shit
                     }
                 }
