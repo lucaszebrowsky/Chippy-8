@@ -11,6 +11,14 @@ SDL_Window* window = NULL;
 SDL_Renderer* window_render = NULL;
 u8 drawFlag = 0;
 
+const int keymap[16] = {
+    SDL_SCANCODE_1,SDL_SCANCODE_2,SDL_SCANCODE_3,SDL_SCANCODE_4,
+    SDL_SCANCODE_Q,SDL_SCANCODE_W,SDL_SCANCODE_E,SDL_SCANCODE_R,
+    SDL_SCANCODE_A,SDL_SCANCODE_S,SDL_SCANCODE_D,SDL_SCANCODE_F,
+    SDL_SCANCODE_Z,SDL_SCANCODE_X,SDL_SCANCODE_C,SDL_SCANCODE_V
+};
+
+
 void initSDL(void) {
     if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         printf("SDL Init Error!");
@@ -93,7 +101,7 @@ void loadROM(char* path,Chip8* chip8) {
         exit(-1);
     }
 
-    fread(chip8->memory.rom,sizeof(chip8->memory.rom),1,file);
+    fread(chip8->memory.rom,file_size,1,file);
 
     fclose(file);
     file = NULL;
@@ -153,22 +161,11 @@ void updateKeys(Chip8* chip8) {
     const u8* key_state = SDL_GetKeyboardState(NULL);
     SDL_PumpEvents();
 
-    chip8->keyboard[0x0] = key_state[SDL_SCANCODE_1];
-    chip8->keyboard[0x1] = key_state[SDL_SCANCODE_2];
-    chip8->keyboard[0x2] = key_state[SDL_SCANCODE_3];
-    chip8->keyboard[0x3] = key_state[SDL_SCANCODE_4];
-    chip8->keyboard[0x4] = key_state[SDL_SCANCODE_Q];
-    chip8->keyboard[0x5] = key_state[SDL_SCANCODE_W];
-    chip8->keyboard[0x6] = key_state[SDL_SCANCODE_E];
-    chip8->keyboard[0x7] = key_state[SDL_SCANCODE_R];
-    chip8->keyboard[0x8] = key_state[SDL_SCANCODE_A];
-    chip8->keyboard[0x9] = key_state[SDL_SCANCODE_S];
-    chip8->keyboard[0xA] = key_state[SDL_SCANCODE_S];
-    chip8->keyboard[0xB] = key_state[SDL_SCANCODE_F];
-    chip8->keyboard[0xC] = key_state[SDL_SCANCODE_Y];
-    chip8->keyboard[0xD] = key_state[SDL_SCANCODE_X];
-    chip8->keyboard[0xE] = key_state[SDL_SCANCODE_C];
-    chip8->keyboard[0xF] = key_state[SDL_SCANCODE_V];
+    for(u8 i = 0; i < 0x10;i++) {
+        
+        chip8->keyboard[i] = key_state[keymap[i]];
+        
+    }
 }
 
 /*
@@ -420,7 +417,7 @@ void INST_E000(Chip8* chip8) {
 
 /*
     FX07 -> Store Delay Timer(DT) in v[x]
-    FX0A -> Wait for a keypress and store the result in v[x] NOTE: I forgot to save the result in v[x] but I am too lazy to fix it :D
+    FX0A -> Wait for a keypress and store the result in v[x]
     FX15 -> Set the Delay Timer(DT) to v[x]
     FX18 -> Set the Sound Timer(ST) to v[x]
     FX1E -> Add v[x] to Index-Register
@@ -439,14 +436,19 @@ void INST_F000(Chip8* chip8) {
             break;
 
         case 0x000A:
-
-            SDL_Event event;
-
-            while(!SDL_PollEvent(&event))
-            {   
-                // Wait for keypress by user
-                SDL_Delay(1);
+            const u8* key_state = SDL_GetKeyboardState(NULL);
+            
+            // Wait for Keypress by user,only valid keys count!
+            while(1) {
+                for(u8 i = 0; i < 0x10;i++) {
+                    SDL_PumpEvents();
+                    if(key_state[keymap[i]]) {
+                        chip8->V[x] = key_state[keymap[i]];
+                        goto DONE;  // get out of this shit
+                    }
+                }
             }
+        DONE:
             break;
 
         case 0x0015:
@@ -559,7 +561,6 @@ void game_loop(Chip8* chip8) {
         if(event.type == SDL_QUIT) {
             running = 0;
         }
-
         SDL_Delay(5);
     }
 
@@ -569,7 +570,7 @@ void game_loop(Chip8* chip8) {
 
 void killSDL(void) {
     SDL_DestroyRenderer(window_render);
-	SDL_DestroyWindow(window);
+    SDL_DestroyWindow(window);
     SDL_Quit();
     window_render = NULL;
     window = NULL;
@@ -588,6 +589,6 @@ int main(int argc, char* argv[]) {
     initChip8(&chip8);
     loadROM(argv[1],&chip8);
     game_loop(&chip8);
-    killSDL();   
+    killSDL();
     return 0;
 }
