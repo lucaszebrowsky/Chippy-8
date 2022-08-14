@@ -1,3 +1,26 @@
+/*
+MIT License
+
+Copyright (c) 2022 Lu-Die-Milchkuh
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
@@ -97,7 +120,7 @@ void loadROM(char* path,Chip8* chip8) {
     fseek(file,0,SEEK_SET);
 
     if(file_size > sizeof(chip8->memory.rom)) {
-        printf("File too big!");
+        printf("File too big! Max ROM Size is %lu bytes!\n",sizeof(chip8->memory.rom));
         exit(-1);
     }
 
@@ -185,7 +208,7 @@ void INST_0000(Chip8* chip8) {
             break;
 
         default:
-            printf("Error! Opcode: %x\n",chip8->opcode);
+            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
             exit(-1);
             break;
         }
@@ -315,7 +338,7 @@ void INST_8000(Chip8* chip8) {
             break;
 
         default:
-            printf("Error! Opcode: %x\n",chip8->opcode);
+            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
             exit(-1);
             break;
         }
@@ -407,7 +430,7 @@ void INST_E000(Chip8* chip8) {
             break;
 
         default:
-            printf("Error! Opcode: %x\n",chip8->opcode);
+            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
             exit(-1);
             break;
     }
@@ -440,8 +463,8 @@ void INST_F000(Chip8* chip8) {
             
             // Wait for Keypress by user,only valid keys count!
             while(1) {
+                SDL_PumpEvents();
                 for(u8 i = 0; i < 0x10;i++) {
-                    SDL_PumpEvents();
                     if(key_state[keymap[i]]) {
                         chip8->V[x] = i;
                         goto DONE;  // get out of this shit
@@ -465,7 +488,7 @@ void INST_F000(Chip8* chip8) {
             break;
 
         case 0x0029:
-            chip8->Index = chip8->V[x] * 5;
+            chip8->Index = chip8->V[x];
             break;
 
         case 0x0033:
@@ -491,7 +514,7 @@ void INST_F000(Chip8* chip8) {
             break;
 
         default:
-            printf("Error! Opcode: %x\n",chip8->opcode);
+            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
             exit(-1);
             break;
         }
