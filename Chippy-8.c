@@ -31,7 +31,7 @@ void initSDL(void) {
         exit(-1);
     }
 
-    window_render = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    window_render = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
 
     if(!window_render) {
         printf("Failed to create SDL Renderer!");
@@ -337,7 +337,7 @@ void INST_9XY0(Chip8* chip8) {
 void INST_ANNN(Chip8* chip8) {
     u16 nnn = (chip8->opcode & 0x0FFF);
 
-    chip8->Index = nnn;
+    chip8->Index = nnn; 
     chip8->PC += 2;
 }
 
@@ -353,7 +353,7 @@ void INST_CXNN(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u16 nn = (chip8->opcode & 0xFF);
 
-    chip8->V[x] = (rand() % (255 -0+1)) + 0 + nn;
+    chip8->V[x] = (rand() & nn) % 255;
     chip8->PC += 2;
 }
 
@@ -362,8 +362,8 @@ void INST_DXYN(Chip8* chip8) {
     chip8->V[0xF] = 0;
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 y = (chip8->opcode & 0x00F0) >> 4;
-    u16 height = chip8->opcode & 0x000F;
-    u16 pixel = 0;
+    u8 height = chip8->opcode & 0x000F;
+    u8 pixel = 0;
         
     for(u16 yLine = 0; yLine < height; yLine++)
     {   
@@ -447,6 +447,7 @@ void INST_F000(Chip8* chip8) {
                         goto DONE;  // get out of this shit
                     }
                 }
+                SDL_Delay(1);
             }
         DONE:
             break;
@@ -563,7 +564,6 @@ void game_loop(Chip8* chip8) {
         }
         SDL_Delay(5);
     }
-
     SDL_CloseAudioDevice(deviceId);
     SDL_FreeWAV(wavBuffer);
 }
