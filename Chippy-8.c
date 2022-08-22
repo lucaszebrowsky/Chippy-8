@@ -124,8 +124,13 @@ void loadROM(char* path,Chip8* chip8) {
         exit(-1);
     }
 
-    fread(chip8->memory.rom,file_size,1,file);
+    size_t result = fread(chip8->memory.rom,file_size,1,file);
 
+    if(result != 1) {
+        printf("Could not read ROM into memory!\n");
+        exit(-1);
+    }
+    
     fclose(file);
     file = NULL;
 
@@ -460,7 +465,7 @@ void INST_F000(Chip8* chip8) {
 
         case 0x000A:
             const u8* key_state = SDL_GetKeyboardState(NULL);
-            
+
             // Wait for Keypress by user,only valid keys count!
             while(1) {
                 SDL_PumpEvents();
