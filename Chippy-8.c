@@ -148,7 +148,7 @@ void drawScreen(Chip8* chip8) {
         for(u8 px = 0; px < 64; px++) // x
         {   
            
-            if(chip8->display[px + (py*64)]) {
+            if(chip8->display[px][py]) {
                 SDL_Rect rect;
                 rect.x = px * SCALE;
                 rect.y = py * SCALE;
@@ -399,10 +399,10 @@ void INST_DXYN(Chip8* chip8) {
         for(u16 xLine = 0; xLine < 8; xLine++) {
             if((pixel & (0x80 >> xLine)) != 0) {
 
-                if(chip8->display[(chip8->V[x] + xLine + ((chip8->V[y] + yLine) * 64)) % 2048] == 1) {
+                if(chip8->display[(chip8->V[x] + xLine) % 64][(chip8->V[y] + yLine) % 32] == 1) {
                     chip8->V[0xF] = 1;
                 }
-                chip8->display[(chip8->V[x] + xLine + ((chip8->V[y] + yLine) * 64)) % 2048] ^= 1;
+                chip8->display[(chip8->V[x] + xLine) % 64][(chip8->V[y] + yLine) % 32] ^= 1;
             }
         }
     }
@@ -542,7 +542,7 @@ void game_loop(Chip8* chip8) {
     SDL_AudioDeviceID deviceId;
 
     // Jump Table
-    static void (*jump_table[16])(Chip8*) = {
+    void (*jump_table[16])(Chip8*) = {
         &INST_0000,&INST_1NNN,&INST_2NNN,&INST_3XNN,
         &INST_4XNN,&INST_5XY0,&INST_6XNN,&INST_7XNN,
         &INST_8000,&INST_9XY0,&INST_ANNN,&INST_BNNN,

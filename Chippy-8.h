@@ -48,7 +48,7 @@ typedef struct Chip8
     u8 DT;          // Delay Timer
     u16 PC;         // Programm Counter
     u16 Index;      // Index Register
-    u8 display[64 * 32];
+    u8 display[64][32]; // 2048 KB of VRAM
     u8 keyboard[16];
     u16 opcode;
     
