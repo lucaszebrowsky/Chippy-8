@@ -120,7 +120,7 @@ void loadROM(char* path,Chip8* chip8) {
     fseek(file,0,SEEK_SET);
 
     if(file_size > sizeof(chip8->memory.rom)) {
-        printf("File too big! Max ROM Size is %u bytes!\n",sizeof(chip8->memory.rom));
+        printf("File too big! Max ROM Size is %zu bytes!\n",sizeof(chip8->memory.rom));
         exit(-1);
     }
 
