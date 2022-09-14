@@ -87,6 +87,7 @@ void initChip8(Chip8* chip8) {
     // Clearing RAM
     memset(chip8->memory.ram,0,sizeof(chip8->memory.ram));
 
+    // Clearing VRAM
     memset(chip8->display,0,sizeof(chip8->display));
 
     // Clearing Register
@@ -96,7 +97,7 @@ void initChip8(Chip8* chip8) {
     memset(chip8->keyboard,0,sizeof(chip8->keyboard));
 
     // Loading Fonts into Memory
-    memcpy(chip8->memory.fonts,&font_array,sizeof(font_array));
+    memcpy(chip8->memory.fonts,font_array,sizeof(font_array));
 
     chip8->PC = 0x200;  // Start of Program Code
     chip8->SP = 0;
@@ -189,7 +190,7 @@ void updateKeys(Chip8* chip8) {
     const u8* key_state = SDL_GetKeyboardState(NULL);
     SDL_PumpEvents();
 
-    for(u8 i = 0; i < 0x10;i++) {
+    for(u8 i = 0; i < 0x10; i++) {
         
         chip8->keyboard[i] = key_state[keymap[i]];
         
@@ -338,7 +339,7 @@ void INST_8000(Chip8* chip8) {
             break;
 
         case 0x000E:
-            chip8->V[0xF] = (chip8->V[x] & 0x80) >> 7;
+            chip8->V[0xF] = chip8->V[x] >> 7;
             chip8->V[x] = chip8->V[x] << 1;
             break;
 
@@ -355,7 +356,7 @@ void INST_9XY0(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 y = (chip8->opcode & 0x00F0) >> 4;
 
-    if(chip8->V[x] != chip8->V[y]){
+    if(chip8->V[x] != chip8->V[y]) {
         chip8->PC += 2;
     }
     chip8->PC += 2;
@@ -379,9 +380,9 @@ void INST_BNNN(Chip8* chip8) {
 // Set v[x] to a random number with a mask of nn
 void INST_CXNN(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
-    u16 nn = (chip8->opcode & 0xFF);
+    u8 nn = (chip8->opcode & 0xFF);
 
-    chip8->V[x] = (rand() & nn) % 255;
+    chip8->V[x] = ((rand() % 255) & nn);
     chip8->PC += 2;
 }
 
@@ -494,13 +495,19 @@ void INST_F000(Chip8* chip8) {
             break;
 
         case 0x0029:
-            chip8->Index = chip8->V[x];
+            /*
+                V[x] can contain 0x0 - 0xF. 
+                These are stored in the font region in memory(starting at 0x00) and are all 5 bytes long,
+                so in order to get the correct starting address we have to multiply the value by 5
+                Example: Draw hex 3 -> 0x3 * 0x5 = 0xF -> font address of hex 3 starts at 0xF
+            */
+            chip8->Index = chip8->V[x] * 0x5;
             break;
 
         case 0x0033:
             chip8->memory.ram[chip8->Index] = (chip8->V[x] / 100);
             chip8->memory.ram[chip8->Index+1] = ((chip8->V[x] / 10) % 10);
-            chip8->memory.ram[chip8->Index+2] = ((chip8->V[x] % 100) % 10);
+            chip8->memory.ram[chip8->Index+2] = (chip8->V[x] % 100) % 10;
             break;
 
         case 0x0055:
@@ -508,15 +515,13 @@ void INST_F000(Chip8* chip8) {
             {    
                 chip8->memory.ram[(chip8->Index + i)] = chip8->V[i];
             }
-            //chip8->Index = chip8->Index + 1 + x; <- Certain S-CHIP-compatible emulators may implement this instruction in this manner.
             break;
 
         case 0x0065:
             for (u8 i = 0; i <= x; i++)
             {   
-                chip8->V[i] = chip8->memory.ram[chip8->Index+i];
+                chip8->V[i] = chip8->memory.ram[(chip8->Index+i)];
             }
-            //chip8->Index = chip8->Index + 1 + x; <- Certain S-CHIP-compatible emulators may implement this instruction in this manner.
             break;
 
         default:
