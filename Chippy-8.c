@@ -120,7 +120,7 @@ void loadROM(char* path,Chip8* chip8) {
     fseek(file,0,SEEK_SET);
 
     if(file_size > sizeof(chip8->memory.rom)) {
-        printf("File too big! Max ROM Size is %lu bytes!\n",sizeof(chip8->memory.rom));
+        printf("File too big! Max ROM Size is %zu bytes!\n",sizeof(chip8->memory.rom));
         exit(-1);
     }
 
@@ -457,6 +457,7 @@ void INST_E000(Chip8* chip8) {
 void INST_F000(Chip8* chip8) {
     u8 foo = (chip8->opcode & 0x00FF);
     u8 x = (chip8->opcode & 0x0F00) >> 8;
+    const u8* key_state = NULL;
 
     switch(foo) {
         case 0x0007:
@@ -464,7 +465,7 @@ void INST_F000(Chip8* chip8) {
             break;
 
         case 0x000A:
-            const u8* key_state = SDL_GetKeyboardState(NULL);
+            key_state = SDL_GetKeyboardState(NULL);
 
             // Wait for Keypress by user,only valid keys count!
             while(1) {
