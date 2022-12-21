@@ -21,9 +21,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
+
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+#include <time.h>
 #include <SDL2/SDL.h>
 #include "Chippy-8.h"
 
@@ -382,7 +383,7 @@ void INST_CXNN(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 nn = (chip8->opcode & 0xFF);
 
-    chip8->V[x] = ((rand() % 255) & nn);
+    chip8->V[x] = (rand() % 256) & nn;
     chip8->PC += 2;
 }
 
@@ -618,7 +619,7 @@ int main(int argc, char* argv[]) {
     }
 
     initSDL();
-
+    srand(time(NULL)); // Seed the Random number generator
     Chip8 chip8;    // Great name lol
     initChip8(&chip8);
     loadROM(argv[1],&chip8);
