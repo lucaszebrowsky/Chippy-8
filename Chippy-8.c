@@ -28,7 +28,7 @@ SOFTWARE.
 #include <SDL2/SDL.h>
 #include "Chippy-8.h"
 
-// Change this to whatever you like lol
+// Initial Scale. Change this to whatever you prefer
 #define SCALE 15
 
 SDL_Window* window = NULL;
@@ -48,7 +48,7 @@ void initSDL(void) {
         printf("SDL Init Error!");
         exit(-1);
     }
-    window = SDL_CreateWindow("Chippy-8",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,64 * SCALE,32 * SCALE,0);
+    window = SDL_CreateWindow("Chippy-8",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,64 * SCALE,32 * SCALE,SDL_WINDOW_RESIZABLE);
     
     if(!window) {
         printf("Failed to create SDL Window");
@@ -142,6 +142,14 @@ void drawScreen(Chip8* chip8) {
     SDL_SetRenderDrawColor(window_render, 0, 0, 0, 255);
     SDL_RenderClear(window_render);
     SDL_SetRenderDrawColor(window_render, 0, 255, 0, 255);
+
+    int32_t width = 0;
+    int32_t height = 0;
+
+    SDL_GetWindowSizeInPixels(window,&width,&height);
+    
+    uint32_t scalex = width/64;
+    uint32_t scaley = height/32; 
     
 
     for(u8 py = 0; py < 32; py++) // y
@@ -152,10 +160,10 @@ void drawScreen(Chip8* chip8) {
            
             if(chip8->display[px][py]) {
                 SDL_Rect rect;
-                rect.x = px * SCALE;
-                rect.y = py * SCALE;
-                rect.w = SCALE;
-                rect.h = SCALE;
+                rect.x = px * scalex;
+                rect.y = py * scaley;
+                rect.w = scalex;
+                rect.h = scaley;
                 
                 SDL_RenderFillRect(window_render,&rect);
                 
