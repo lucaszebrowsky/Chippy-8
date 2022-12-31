@@ -146,7 +146,7 @@ void drawScreen(Chip8* chip8) {
     int32_t width = 0;
     int32_t height = 0;
 
-    SDL_GetWindowSizeInPixels(window,&width,&height);
+    SDL_GetWindowSize(window,&width,&height);
     
     uint32_t scalex = width/64;
     uint32_t scaley = height/32; 
