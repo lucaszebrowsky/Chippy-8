@@ -42,28 +42,27 @@ const int keymap[16] = {
     SDL_SCANCODE_Z,SDL_SCANCODE_X,SDL_SCANCODE_C,SDL_SCANCODE_V
 };
 
-
 void initSDL(void) {
-    if(SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
         printf("SDL Init Error!");
         exit(-1);
     }
-    window = SDL_CreateWindow("Chippy-8",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,64 * SCALE,32 * SCALE,SDL_WINDOW_RESIZABLE);
-    
-    if(!window) {
+
+    window = SDL_CreateWindow("Chippy-8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 64 * SCALE, 32 * SCALE, SDL_WINDOW_RESIZABLE);
+
+    if (!window) {
         printf("Failed to create SDL Window");
         exit(-1);
     }
 
-    window_render = SDL_CreateRenderer(window,-1,SDL_RENDERER_ACCELERATED);
+    window_render = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 
-    if(!window_render) {
+    if (!window_render) {
         printf("Failed to create SDL Renderer!");
         exit(-1);
     }
 
 }
-
 
 void initChip8(Chip8* chip8) {
     const u8 font_array[80] = {
@@ -86,53 +85,52 @@ void initChip8(Chip8* chip8) {
     };
 
     // Clearing RAM
-    memset(chip8->memory.ram,0,sizeof(chip8->memory.ram));
+    memset(chip8->memory.ram, 0, sizeof(chip8->memory.ram));
 
     // Clearing VRAM
-    memset(chip8->display,0,sizeof(chip8->display));
+    memset(chip8->display, 0, sizeof(chip8->display));
 
     // Clearing Register
-    memset(chip8->V,0,sizeof(chip8->V));
+    memset(chip8->V, 0, sizeof(chip8->V));
 
     // Clearing Keyboard
-    memset(chip8->keyboard,0,sizeof(chip8->keyboard));
+    memset(chip8->keyboard, 0, sizeof(chip8->keyboard));
 
     // Loading Fonts into Memory
-    memcpy(chip8->memory.fonts,font_array,sizeof(font_array));
+    memcpy(chip8->memory.fonts, font_array, sizeof(font_array));
 
     chip8->PC = 0x200;  // Start of Program Code
     chip8->SP = 0;
     chip8->Index = 0;
     chip8->DT = 60;
     chip8->ST = 60;
-    
+
 }
 
-void loadROM(char* path,Chip8* chip8) {
-    FILE* file = fopen(path,"rb");
+void loadROM(char* path, Chip8* chip8) {
+    FILE* file = fopen(path, "rb");
     size_t file_size = 0;
-    if (file == NULL)
-    {
+    if (file == NULL) {
         printf("Error opening ROM!\n");
         exit(-1);
     }
-    
-    fseek(file,0,SEEK_END);
-    file_size = ftell(file);
-    fseek(file,0,SEEK_SET);
 
-    if(file_size > sizeof(chip8->memory.rom)) {
-        printf("File too big! Max ROM Size is %zu bytes!\n",sizeof(chip8->memory.rom));
+    fseek(file, 0, SEEK_END);
+    file_size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    if (file_size > sizeof(chip8->memory.rom)) {
+        printf("File too big! Max ROM Size is %zu bytes!\n", sizeof(chip8->memory.rom));
         exit(-1);
     }
 
-    size_t result = fread(chip8->memory.rom,file_size,1,file);
+    size_t result = fread(chip8->memory.rom, file_size, 1, file);
 
-    if(result != 1) {
+    if (result != 1) {
         printf("Could not read ROM into memory!\n");
         exit(-1);
     }
-    
+
     fclose(file);
     file = NULL;
 
@@ -146,32 +144,30 @@ void drawScreen(Chip8* chip8) {
     int32_t width = 0;
     int32_t height = 0;
 
-    SDL_GetWindowSize(window,&width,&height);
-    
-    uint32_t scalex = width/64;
-    uint32_t scaley = height/32; 
-    
+    SDL_GetWindowSize(window, &width, &height);
 
-    for(u8 py = 0; py < 32; py++) // y
-    {   
-        
-        for(u8 px = 0; px < 64; px++) // x
-        {   
-           
-            if(chip8->display[px][py]) {
+    uint32_t scalex = width / 64;
+    uint32_t scaley = height / 32;
+
+    for (u8 py = 0; py < 32; py++) {    // y
+
+        for (u8 px = 0; px < 64; px++) {    // x
+
+            if (chip8->display[px][py]) {
                 SDL_Rect rect;
                 rect.x = px * scalex;
                 rect.y = py * scaley;
                 rect.w = scalex;
                 rect.h = scaley;
-                
-                SDL_RenderFillRect(window_render,&rect);
-                
+
+                SDL_RenderFillRect(window_render, &rect);
+
             }
-            
+
         }
-        
+
     }
+
     SDL_RenderPresent(window_render);
 
 }
@@ -192,17 +188,17 @@ void drawScreen(Chip8* chip8) {
     Y   X   C   V
 */
 void updateKeys(Chip8* chip8) {
-    /*  
+    /*
         This function returns a pointer to an SDL internal array,
         so it will always return the same pointer and wont cause a memory leak
     */
     const u8* key_state = SDL_GetKeyboardState(NULL);
     SDL_PumpEvents();
 
-    for(u8 i = 0; i < 0x10; i++) {
-        
+    for (u8 i = 0; i < 0x10; i++) {
+
         chip8->keyboard[i] = key_state[keymap[i]];
-        
+
     }
 }
 
@@ -211,23 +207,22 @@ void updateKeys(Chip8* chip8) {
     00EE -> Return from subroutine
 */
 void INST_0000(Chip8* chip8) {
-    switch(chip8->opcode)
-        {
-        case 0x00E0:
-            memset(chip8->display,0,sizeof(chip8->display));
-            break;
+    switch (chip8->opcode) {
+    case 0x00E0:
+        memset(chip8->display, 0, sizeof(chip8->display));
+        break;
 
-        case 0x00EE: // RET
-            chip8->PC = chip8->Stack[chip8->SP];
-            chip8->SP--;
-            break;
+    case 0x00EE: // RET
+        chip8->PC = chip8->Stack[chip8->SP];
+        chip8->SP--;
+        break;
 
-        default:
-            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
-            exit(-1);
-            break;
-        }
-        chip8->PC += 2;
+    default:
+        printf("Error! Opcode: 0x%04x at PC: %04d\n", chip8->opcode, chip8->PC);
+        exit(-1);
+        break;
+    }
+    chip8->PC += 2;
 }
 
 // Jump to address nnn (set PC to nnn)
@@ -243,11 +238,11 @@ void INST_2NNN(Chip8* chip8) {
 }
 
 // Skip the next instruction if v[x] == nn
-void INST_3XNN(Chip8* chip8){
+void INST_3XNN(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 nn = (chip8->opcode & 0x00FF);
 
-    if(chip8->V[x] == nn) {
+    if (chip8->V[x] == nn) {
         chip8->PC += 2;
     }
     chip8->PC += 2;
@@ -258,9 +253,9 @@ void INST_4XNN(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 nn = (chip8->opcode & 0x00FF);
 
-    if(chip8->V[x] != nn) {
+    if (chip8->V[x] != nn) {
         chip8->PC += 2;
-    }            
+    }
     chip8->PC += 2;
 }
 
@@ -269,10 +264,10 @@ void INST_5XY0(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 y = (chip8->opcode & 0x00F0) >> 4;
 
-    if(chip8->V[x]==chip8->V[y]) {
+    if (chip8->V[x] == chip8->V[y]) {
         chip8->PC += 2;
-    } 
-    chip8->PC += 2; 
+    }
+    chip8->PC += 2;
 }
 
 // Store nn in v[x]
@@ -309,55 +304,54 @@ void INST_8000(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 y = (chip8->opcode & 0x00F0) >> 4;
 
-    switch(foo)
-    {
-        case 0x0:
-            chip8->V[x] = chip8->V[y];
-            break;
+    switch (foo) {
+    case 0x0:
+        chip8->V[x] = chip8->V[y];
+        break;
 
-        case 0x0001:
-            chip8->V[x] = chip8->V[x] | chip8->V[y];
-            break;
+    case 0x0001:
+        chip8->V[x] = chip8->V[x] | chip8->V[y];
+        break;
 
-        case 0x0002:
-            chip8->V[x] &= chip8->V[y];
-            break;
+    case 0x0002:
+        chip8->V[x] &= chip8->V[y];
+        break;
 
-        case 0x0003:
-            chip8->V[x] ^= chip8->V[y];
-            break;
+    case 0x0003:
+        chip8->V[x] ^= chip8->V[y];
+        break;
 
-        case 0x0004:
-            chip8->V[0xF] = ((chip8->V[x]+chip8->V[y]) > 0xFF);
-            chip8->V[x] += chip8->V[y];
-            break;
+    case 0x0004:
+        chip8->V[0xF] = ((chip8->V[x] + chip8->V[y]) > 0xFF);
+        chip8->V[x] += chip8->V[y];
+        break;
 
-        case 0x0005:
-            chip8->V[0xF] = (chip8->V[x] > chip8->V[y]);
-            chip8->V[x] -= chip8->V[y];
-            break;
+    case 0x0005:
+        chip8->V[0xF] = (chip8->V[x] > chip8->V[y]);
+        chip8->V[x] -= chip8->V[y];
+        break;
 
-        case 0x0006:
-            chip8->V[0xF] = chip8->V[x] & 0x1;
-            chip8->V[x] = chip8->V[x] >> 1;
-            break;
+    case 0x0006:
+        chip8->V[0xF] = chip8->V[x] & 0x1;
+        chip8->V[x] = chip8->V[x] >> 1;
+        break;
 
-        case 0x0007:
-            chip8->V[0xF] = (chip8->V[y] > chip8->V[x]);
-            chip8->V[x] = chip8->V[y] - chip8->V[x];
-            break;
+    case 0x0007:
+        chip8->V[0xF] = (chip8->V[y] > chip8->V[x]);
+        chip8->V[x] = chip8->V[y] - chip8->V[x];
+        break;
 
-        case 0x000E:
-            chip8->V[0xF] = chip8->V[x] >> 7;
-            chip8->V[x] = chip8->V[x] << 1;
-            break;
+    case 0x000E:
+        chip8->V[0xF] = chip8->V[x] >> 7;
+        chip8->V[x] = chip8->V[x] << 1;
+        break;
 
-        default:
-            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
-            exit(-1);
-            break;
-        }
-        chip8->PC += 2;
+    default:
+        printf("Error! Opcode: 0x%04x at PC: %04d\n", chip8->opcode, chip8->PC);
+        exit(-1);
+        break;
+    }
+    chip8->PC += 2;
 }
 
 // Skip the next instruction if v[x] != v[y]
@@ -365,7 +359,7 @@ void INST_9XY0(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     u8 y = (chip8->opcode & 0x00F0) >> 4;
 
-    if(chip8->V[x] != chip8->V[y]) {
+    if (chip8->V[x] != chip8->V[y]) {
         chip8->PC += 2;
     }
     chip8->PC += 2;
@@ -375,7 +369,7 @@ void INST_9XY0(Chip8* chip8) {
 void INST_ANNN(Chip8* chip8) {
     u16 nnn = (chip8->opcode & 0x0FFF);
 
-    chip8->Index = nnn; 
+    chip8->Index = nnn;
     chip8->PC += 2;
 }
 
@@ -402,14 +396,13 @@ void INST_DXYN(Chip8* chip8) {
     u8 y = (chip8->opcode & 0x00F0) >> 4;
     u8 height = chip8->opcode & 0x000F;
     u8 pixel = 0;
-        
-    for(u16 yLine = 0; yLine < height; yLine++)
-    {   
-        pixel = chip8->memory.ram[chip8->Index + yLine];
-        for(u16 xLine = 0; xLine < 8; xLine++) {
-            if((pixel & (0x80 >> xLine)) != 0) {
 
-                if(chip8->display[(chip8->V[x] + xLine) % 64][(chip8->V[y] + yLine) % 32] == 1) {
+    for (u16 yLine = 0; yLine < height; yLine++) {
+        pixel = chip8->memory.ram[chip8->Index + yLine];
+        for (u16 xLine = 0; xLine < 8; xLine++) {
+            if ((pixel & (0x80 >> xLine)) != 0) {
+
+                if (chip8->display[(chip8->V[x] + xLine) % 64][(chip8->V[y] + yLine) % 32] == 1) {
                     chip8->V[0xF] = 1;
                 }
                 chip8->display[(chip8->V[x] + xLine) % 64][(chip8->V[y] + yLine) % 32] ^= 1;
@@ -427,30 +420,29 @@ void INST_DXYN(Chip8* chip8) {
 void INST_E000(Chip8* chip8) {
     u8 foo = (chip8->opcode & 0x00FF);
     u8 x = (chip8->opcode & 0x0F00) >> 8;
-    
-    switch(foo)
-    {
-        case 0x009E:
-            
-            if(chip8->keyboard[chip8->V[x]]) {
-                chip8->PC += 2;
-            }     
-            break;
 
-        case 0x00A1:
-            
-            if(!chip8->keyboard[chip8->V[x]]) {
-                chip8->PC += 2;
-            }
-            break;
+    switch (foo) {
+    case 0x009E:
 
-        default:
-            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
-            exit(-1);
-            break;
+        if (chip8->keyboard[chip8->V[x]]) {
+            chip8->PC += 2;
+        }
+        break;
+
+    case 0x00A1:
+
+        if (!chip8->keyboard[chip8->V[x]]) {
+            chip8->PC += 2;
+        }
+        break;
+
+    default:
+        printf("Error! Opcode: 0x%04x at PC: %04d\n", chip8->opcode, chip8->PC);
+        exit(-1);
+        break;
     }
     chip8->PC += 2;
-    
+
 }
 
 /*
@@ -469,77 +461,75 @@ void INST_F000(Chip8* chip8) {
     u8 x = (chip8->opcode & 0x0F00) >> 8;
     const u8* key_state = NULL;
 
-    switch(foo) {
-        case 0x0007:
-            chip8->V[x] = chip8->DT;
-            break;
+    switch (foo) {
+    case 0x0007:
+        chip8->V[x] = chip8->DT;
+        break;
 
-        case 0x000A:
-            key_state = SDL_GetKeyboardState(NULL);
+    case 0x000A:
+        key_state = SDL_GetKeyboardState(NULL);
 
-            // Wait for Keypress by user,only valid keys count!
-            while(1) {
-                SDL_PumpEvents();
-                for(u8 i = 0; i < 0x10;i++) {
-                    if(key_state[keymap[i]]) {
-                        chip8->V[x] = i;
-                        goto DONE;  // get out of this shit
-                    }
+        // Wait for Keypress by user,only valid keys count!
+        while (1) {
+            SDL_PumpEvents();
+            for (u8 i = 0; i < 0x10;i++) {
+                if (key_state[keymap[i]]) {
+                    chip8->V[x] = i;
+                    goto DONE;  // get out of this shit
                 }
-                SDL_Delay(1);
             }
-        DONE:
-            break;
-
-        case 0x0015:
-            chip8->DT = chip8->V[x];
-            break;
-
-        case 0x0018:
-            chip8->ST = chip8->V[x];
-            break;
-
-        case 0x001E:
-            chip8->Index += chip8->V[x];
-            break;
-
-        case 0x0029:
-            /*
-                V[x] can contain 0x0 - 0xF. 
-                These are stored in the font region in memory(starting at 0x00) and are all 5 bytes long,
-                so in order to get the correct starting address we have to multiply the value by 5
-                Example: Draw hex 3 -> 0x3 * 0x5 = 0xF -> font address of hex 3 starts at 0xF
-            */
-            chip8->Index = chip8->V[x] * 0x5;
-            break;
-
-        case 0x0033:
-            chip8->memory.ram[chip8->Index] = (chip8->V[x] / 100);
-            chip8->memory.ram[chip8->Index+1] = ((chip8->V[x] / 10) % 10);
-            chip8->memory.ram[chip8->Index+2] = (chip8->V[x] % 100) % 10;
-            break;
-
-        case 0x0055:
-            for (u8 i = 0; i <= x; i++)
-            {    
-                chip8->memory.ram[(chip8->Index + i)] = chip8->V[i];
-            }
-            break;
-
-        case 0x0065:
-            for (u8 i = 0; i <= x; i++)
-            {   
-                chip8->V[i] = chip8->memory.ram[(chip8->Index+i)];
-            }
-            break;
-
-        default:
-            printf("Error! Opcode: 0x%04x at PC: %04d\n",chip8->opcode,chip8->PC);
-            exit(-1);
-            break;
+            SDL_Delay(1);
         }
+    DONE:
+        break;
 
-        chip8->PC += 2;
+    case 0x0015:
+        chip8->DT = chip8->V[x];
+        break;
+
+    case 0x0018:
+        chip8->ST = chip8->V[x];
+        break;
+
+    case 0x001E:
+        chip8->Index += chip8->V[x];
+        break;
+
+    case 0x0029:
+        /*
+            V[x] can contain 0x0 - 0xF.
+            These are stored in the font region in memory(starting at 0x00) and are all 5 bytes long,
+            so in order to get the correct starting address we have to multiply the value by 5
+            Example: Draw hex 3 -> 0x3 * 0x5 = 0xF -> font address of hex 3 starts at 0xF
+        */
+        chip8->Index = chip8->V[x] * 0x5;
+        break;
+
+    case 0x0033:
+        chip8->memory.ram[chip8->Index] = (chip8->V[x] / 100);
+        chip8->memory.ram[chip8->Index + 1] = ((chip8->V[x] / 10) % 10);
+        chip8->memory.ram[chip8->Index + 2] = (chip8->V[x] % 100) % 10;
+        break;
+
+    case 0x0055:
+        for (u8 i = 0; i <= x; i++) {
+            chip8->memory.ram[(chip8->Index + i)] = chip8->V[i];
+        }
+        break;
+
+    case 0x0065:
+        for (u8 i = 0; i <= x; i++) {
+            chip8->V[i] = chip8->memory.ram[(chip8->Index + i)];
+        }
+        break;
+
+    default:
+        printf("Error! Opcode: 0x%04x at PC: %04d\n", chip8->opcode, chip8->PC);
+        exit(-1);
+        break;
+    }
+
+    chip8->PC += 2;
 
 }
 
@@ -548,12 +538,12 @@ void game_loop(Chip8* chip8) {
     SDL_Event event;
     u8 running = 1;
     // 500 Instructions/60 Hz == ~ 8 Cycles
-    const uint32_t clock_speed = (uint32_t)(500/60);
+    const uint32_t clock_speed = (uint32_t)(500 / 60);
 
     // Sound Stuff
     SDL_AudioSpec wavSpec;
     uint32_t wavLength;
-    u8 *wavBuffer;
+    u8* wavBuffer;
     SDL_AudioDeviceID deviceId;
 
     // Jump Table
@@ -565,36 +555,34 @@ void game_loop(Chip8* chip8) {
     };
 
     /*
-        If you want to use your own sound file, just place your .wav in the same directory as the executable. 
+        If you want to use your own sound file, just place your .wav in the same directory as the executable.
         Keep in mind that you need to rename it to "sound.wav"!
     */
-    SDL_LoadWAV("sound.wav",&wavSpec,&wavBuffer,&wavLength);
+    SDL_LoadWAV("sound.wav", &wavSpec, &wavBuffer, &wavLength);
     deviceId = SDL_OpenAudioDevice(NULL, 0, &wavSpec, NULL, 0);
 
 
-    while(running)
-    {   
+    while (running) {
         // 8 CPU Cycles
-        for (uint32_t i = 0; i < clock_speed; i++)
-        {
-            chip8->opcode = chip8->memory.ram[chip8->PC] << 8 | chip8->memory.ram[(chip8->PC+1)];
+        for (uint32_t i = 0; i < clock_speed; i++) {
+            chip8->opcode = chip8->memory.ram[chip8->PC] << 8 | chip8->memory.ram[(chip8->PC + 1)];
             //printf("Executing now: %x\n",chip8->opcode);
 
             (*jump_table[chip8->opcode >> 12])(chip8);
 
         }
-        
-        if(chip8->DT > 0) chip8->DT--;
 
-        if(chip8->ST > 0) {
-            if(chip8->ST == 1) {
+        if (chip8->DT > 0) chip8->DT--;
+
+        if (chip8->ST > 0) {
+            if (chip8->ST == 1) {
                 SDL_QueueAudio(deviceId, wavBuffer, wavLength);
                 SDL_PauseAudioDevice(deviceId, 0);
             }
             chip8->ST--;
         }
 
-        if(drawFlag) {
+        if (drawFlag) {
             drawScreen(chip8);
             drawFlag = 0;
         }
@@ -602,7 +590,7 @@ void game_loop(Chip8* chip8) {
         updateKeys(chip8);
 
         SDL_PollEvent(&event);
-        if(event.type == SDL_QUIT) {
+        if (event.type == SDL_QUIT) {
             running = 0;
         }
         SDL_Delay(5);
@@ -620,8 +608,8 @@ void killSDL(void) {
 }
 
 int main(int argc, char* argv[]) {
-    
-    if(argc != 2) {
+
+    if (argc != 2) {
         printf("Invalid Number of Arguments!");
         return 1;
     }
@@ -630,7 +618,7 @@ int main(int argc, char* argv[]) {
     srand(time(NULL)); // Seed the Random number generator
     Chip8 chip8;    // Great name lol
     initChip8(&chip8);
-    loadROM(argv[1],&chip8);
+    loadROM(argv[1], &chip8);
     game_loop(&chip8);
     killSDL();
     return 0;

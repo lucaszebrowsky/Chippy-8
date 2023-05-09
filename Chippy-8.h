@@ -27,20 +27,17 @@ SOFTWARE.
 typedef uint8_t u8;   // 8-Bit aka 1 Byte
 typedef uint16_t u16; // 16-Bit aka 2 Bytes,1 Word
 
-typedef union RAM
-{   
-    struct
-    {
+typedef union RAM {
+    struct {
         u8 fonts[512];      // Fonts, some programs expect them to be stored at 0-0x200
-        u8 rom[(4096-512)]; // Array to store ROM Content
+        u8 rom[(4096 - 512)]; // Array to store ROM Content
     };
-    
+
     u8 ram[4096];       // System RAM
-    
+
 } RAM;
 
-typedef struct Chip8
-{
+typedef struct Chip8 {
     RAM memory;     // Total System Memory
     u8 V[16];       // 16 Special Purpose Register
     u16 Stack[16];  // Stack
@@ -52,6 +49,5 @@ typedef struct Chip8
     u8 display[64][32]; // 2048 KB of VRAM
     u8 keyboard[16];
     u16 opcode;
-    
-} Chip8;
 
+} Chip8;
