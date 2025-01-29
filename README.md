@@ -6,6 +6,7 @@ A fast Chip 8 Emulator written in C.
 #### 1. Install the dependencies
 
 * Ubuntu/Debian:
+
 **NOTICE:** As of writing, neither Ubuntu nor Debian provide SDL3 packages. Please use the v1.0 tag, which relies on SDL2 instead.
 
 * Fedora
