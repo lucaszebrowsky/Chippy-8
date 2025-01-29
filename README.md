@@ -6,13 +6,16 @@ A fast Chip 8 Emulator written in C.
 #### 1. Install the dependencies
 
 * Ubuntu/Debian:
-```    
-$ sudo apt install build-essential libsdl2-dev git
+**NOTICE:** As of writing, neither Ubuntu nor Debian provide SDL3 packages. Please use the v1.0 tag, which relies on SDL2 instead.
+
+* Fedora
+```shell
+$ sudo dnf install make gcc SDL3-devel git
 ```
 
 * Arch
-```
-$ sudo pacman -S base-devel sdl2 git
+```shell
+$ sudo pacman -S base-devel sdl3 git
 ```
 
 #### 2. Clone the repo and cd into it:

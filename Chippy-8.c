@@ -22,11 +22,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
+#include "Chippy-8.h"
+#include <SDL3/SDL.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <SDL2/SDL.h>
-#include "Chippy-8.h"
 
 // Initial Scale. Change this to whatever you prefer
 #define SCALE 15
@@ -44,13 +45,12 @@ const int keymap[16] = {
 
 void initSDL(void)
 {
-	if (SDL_Init(SDL_INIT_EVERYTHING) < 0) {
+	if (!SDL_Init(SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS)) {
 		printf("SDL Init Error!");
 		exit(1);
 	}
 
-	window = SDL_CreateWindow("Chippy-8", SDL_WINDOWPOS_CENTERED,
-							  SDL_WINDOWPOS_CENTERED, 64 * SCALE, 32 * SCALE,
+	window = SDL_CreateWindow("Chippy-8", 64 * SCALE, 32 * SCALE,
 							  SDL_WINDOW_RESIZABLE);
 
 	if (!window) {
@@ -58,7 +58,7 @@ void initSDL(void)
 		exit(1);
 	}
 
-	window_render = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+	window_render = SDL_CreateRenderer(window, NULL);
 
 	if (!window_render) {
 		printf("Failed to create SDL Renderer!");
@@ -158,7 +158,7 @@ void drawScreen(Chip8 *chip8)
 		for (u8 px = 0; px < 64; px++) { // x
 
 			if (chip8->display[px][py]) {
-				SDL_Rect rect;
+				SDL_FRect rect;
 				rect.x = px * scalex;
 				rect.y = py * scaley;
 				rect.w = scalex;
@@ -193,7 +193,7 @@ void updateKeys(Chip8 *chip8)
      *   This function returns a pointer to an SDL internal array,
      *   so it will always return the same pointer and wont cause a memory leak
      */
-	const u8 *key_state = SDL_GetKeyboardState(NULL);
+	const _Bool *key_state = SDL_GetKeyboardState(NULL);
 	SDL_PumpEvents();
 
 	for (u8 i = 0; i < 0x10; i++) {
@@ -296,15 +296,16 @@ void INST_7XNN(Chip8 *chip8)
 }
 
 /*
- *   8XY0 -> Store v[y] in v[x]
- *   8XY1 -> Set v[x] to v[x] OR v[y](bitwise)
- *   8XY2 -> Set v[x] to v[x] AND v[y](bitwise)
- *   8XY3 -> Set v[x] to v[x] XOR v[y](bitwise)
- *   8XY4 -> Add v[y] to v[x] with carry-checking(v[0xF])
- *   8XY5 -> Substract v[y] from v[x] with carry-checking(v[0xF])
- *   8XY6 -> Store v[y] shifted right one bit in v[x],v[0xF] is set to the least significant bit prior to the shift
- *   8XY7 -> Set v[x] = v[y] - v[x] with carry-checking
- *   8XYE -> Store v[y] shifted left one bit in v[x],v[0xF] is set to the most significant bit prior to the shift
+ * 8XY0 -> Store v[y] in v[x]
+ * 8XY1 -> Set v[x] to v[x] OR v[y](bitwise)
+ * 8XY2 -> Set v[x] to v[x] AND v[y](bitwise)
+ * 8XY3 -> Set v[x] to v[x] XOR v[y](bitwise)
+ * 8XY4 -> Add v[y] to v[x] with carry-checking(v[0xF])
+ * 8XY5 -> Substract v[y] from v[x] with carry-checking(v[0xF])
+ * 8XY6 -> Store v[y] shifted right one bit in v[x],v[0xF] is set to the least
+ * significant bit prior to the shift 8XY7 -> Set v[x] = v[y] - v[x] with
+ * carry-checking 8XYE -> Store v[y] shifted left one bit in v[x],v[0xF] is set
+ * to the most significant bit prior to the shift
  */
 void INST_8000(Chip8 *chip8)
 {
@@ -401,7 +402,8 @@ void INST_CXNN(Chip8 *chip8)
 	chip8->PC += 2;
 }
 
-// Draw a sprite at position v[x], v[y] with n bytes of sprite data starting at the address stored in Index
+// Draw a sprite at position v[x], v[y] with n bytes of sprite data starting at
+// the address stored in Index
 void INST_DXYN(Chip8 *chip8)
 {
 	chip8->V[0xF] = 0;
@@ -428,8 +430,10 @@ void INST_DXYN(Chip8 *chip8)
 }
 
 /*
- *    EX9E -> Skip the next instruction if the key corresponding to the hex value currently stored in register v[x] is pressed
- *    EXA1 -> Skip the next instruction if the key corresponding to the hex value currently stored in register v[x] is not pressed
+ * EX9E -> Skip the next instruction if the key corresponding to the hex
+ * value currently stored in register v[x] is pressed EXA1 -> Skip the next
+ * instruction if the key corresponding to the hex value currently stored in
+ * register v[x] is not pressed
  */
 void INST_E000(Chip8 *chip8)
 {
@@ -460,21 +464,23 @@ void INST_E000(Chip8 *chip8)
 }
 
 /*
- *  FX07 -> Store Delay Timer(DT) in v[x]
- *  FX0A -> Wait for a keypress and store the result in v[x]
- *  FX15 -> Set the Delay Timer(DT) to v[x]
- *  FX18 -> Set the Sound Timer(ST) to v[x]
- *  FX1E -> Add v[x] to Index-Register
- *  FX29 -> Set Index-Register to the memory address of the sprite data corresponding to the hexadecimal digit stored in register v[x]
- *  FX33 -> Store BCD representation of v[x] in memory locations I, I+1, and I+2
- *  FX55 -> Store the values of registers v[0] to v[0xF] inclusive in memory starting at address I.
- *  FX65 -> Fill registers v[0] to v[x] inclusive with the values stored in memory starting at address I
+ * FX07 -> Store Delay Timer(DT) in v[x]
+ * FX0A -> Wait for a keypress and store the result in v[x]
+ * FX15 -> Set the Delay Timer(DT) to v[x]
+ * FX18 -> Set the Sound Timer(ST) to v[x]
+ * FX1E -> Add v[x] to Index-Register
+ * FX29 -> Set Index-Register to the memory address of the sprite data
+ * corresponding to the hexadecimal digit stored in register v[x] FX33 -> Store
+ * BCD representation of v[x] in memory locations I, I+1, and I+2 FX55 -> Store
+ * the values of registers v[0] to v[0xF] inclusive in memory starting at
+ * address I. FX65 -> Fill registers v[0] to v[x] inclusive with the values
+ * stored in memory starting at address I
  */
 void INST_F000(Chip8 *chip8)
 {
 	u8 foo = (chip8->opcode & 0x00FF);
 	u8 x = (chip8->opcode & 0x0F00) >> 8;
-	const u8 *key_state = NULL;
+	const _Bool *key_state = NULL;
 
 	switch (foo) {
 	case 0x0007:
@@ -512,10 +518,11 @@ DONE:
 
 	case 0x0029:
 		/*
-         *   V[x] can contain 0x0 - 0xF.
-         *   These are stored in the font region in memory(starting at 0x00) and are all 5 bytes long,
-         *   so in order to get the correct starting address we have to multiply the value by 5
-         *   Example: Draw hex 3 -> 0x3 * 0x5 = 0xF -> font address of hex 3 starts at 0xF
+         * V[x] can contain 0x0 - 0xF.
+         * These are stored in the font region in memory(starting at 0x00) and are
+         * all 5 bytes long, so in order to get the correct starting address we have
+         * to multiply the value by 5 Example: Draw hex 3 -> 0x3 * 0x5 = 0xF -> font
+         * address of hex 3 starts at 0xF
          */
 		chip8->Index = chip8->V[x] * 0x5;
 		break;
@@ -558,7 +565,6 @@ void game_loop(Chip8 *chip8)
 	SDL_AudioSpec wavSpec;
 	uint32_t wavLength;
 	u8 *wavBuffer;
-	SDL_AudioDeviceID deviceId;
 
 	// Jump Table
 	void (*jump_table[16])(Chip8 *) = {
@@ -568,11 +574,13 @@ void game_loop(Chip8 *chip8)
 	};
 
 	/*
-     *   If you want to use your own sound file, just place your .wav in the same directory as the executable.
-     *   Keep in mind that you need to rename it to "sound.wav"!
-     */
+   	 * If you want to use your own sound file, just place your .wav in the same
+   	 * directory as the executable. Keep in mind that you need to rename it to
+	 * "sound.wav"!
+   	 */
 	SDL_LoadWAV("sound.wav", &wavSpec, &wavBuffer, &wavLength);
-	deviceId = SDL_OpenAudioDevice(NULL, 0, &wavSpec, NULL, 0);
+	SDL_AudioStream *stream = SDL_OpenAudioDeviceStream(
+		SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &wavSpec, NULL, NULL);
 
 	while (running) {
 		// 8 CPU Cycles
@@ -588,8 +596,8 @@ void game_loop(Chip8 *chip8)
 
 		if (chip8->ST > 0) {
 			if (chip8->ST == 1) {
-				SDL_QueueAudio(deviceId, wavBuffer, wavLength);
-				SDL_PauseAudioDevice(deviceId, 0);
+				SDL_ResumeAudioDevice(SDL_GetAudioStreamDevice(stream));
+				SDL_PutAudioStreamData(stream, wavBuffer, wavLength);
 			}
 			chip8->ST--;
 		}
@@ -602,13 +610,14 @@ void game_loop(Chip8 *chip8)
 		updateKeys(chip8);
 
 		SDL_PollEvent(&event);
-		if (event.type == SDL_QUIT) {
+		if (event.type == SDL_EVENT_QUIT) {
 			running = 0;
 		}
 		SDL_Delay(5);
 	}
-	SDL_CloseAudioDevice(deviceId);
-	SDL_FreeWAV(wavBuffer);
+
+	SDL_CloseAudioDevice(SDL_GetAudioStreamDevice(stream));
+	SDL_free(wavBuffer);
 }
 
 void killSDL(void)
